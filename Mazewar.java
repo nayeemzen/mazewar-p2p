@@ -23,10 +23,20 @@ import javax.swing.JTextPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JOptionPane;
+
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+
 import javax.swing.BorderFactory;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -36,6 +46,12 @@ import java.io.Serializable;
  */
 
 public class Mazewar extends JFrame {
+	
+		private static boolean isMultiplayer = false;
+		private static String hostname;
+		private static int port;
+		private static MazewarClient client;
+		private static ArrayList<String> peerList = new ArrayList<String>();
 
         /**
          * The default width of the {@link Maze}.
@@ -144,12 +160,15 @@ public class Mazewar extends JFrame {
                 
                 // Create the GUIClient and connect it to the KeyListener queue
                 guiClient = new GUIClient(name);
-                maze.addClient(guiClient);
+                //maze.addClient(guiClient);
                 this.addKeyListener(guiClient);
                 
+                if (isMultiplayer) {
+                	client.start();
+                	
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
-                {
+                } else {
                         maze.addClient(new RobotClient("Norby"));
                         maze.addClient(new RobotClient("Robbie"));
                         maze.addClient(new RobotClient("Clango"));
@@ -222,8 +241,32 @@ public class Mazewar extends JFrame {
          * @param args Command-line arguments.
          */
         public static void main(String args[]) {
-
-                /* Create the GUI */
-                new Mazewar();
+        	// TODO find better way to parse arguments
+        	if (args.length == 2) {
+	        	isMultiplayer = true;
+	        	hostname = args[0];
+	        	port = Integer.parseInt(args[1]);
+	        	client = new MazewarClient();
+            	Socket socket = client.connect(hostname, port);
+            	
+				try {
+					BufferedReader readStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+					String[] peers = readStream.readLine()
+									.replace("[", "")
+									.replace("]", "")
+									.replace("/", "")
+									.split(",");
+					for(String peer: peers) {
+						peerList.add(peer);
+					}
+					System.out.println(peerList);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return;
+				}
+        	}
+        	
+            /* Create the GUI */
+            new Mazewar();
         }
 }

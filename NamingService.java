@@ -30,6 +30,7 @@ public class NamingService {
 				BufferedWriter writeStream = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 				connectedClients.add(clientSocket.getInetAddress().toString() + "-" + clientSocket.getPort());
 				writeStream.write(connectedClients.toString());
+				writeStream.newLine();
 				writeStream.flush();
 				writeStream.close();
 			} catch (IOException e) {
