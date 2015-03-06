@@ -48,8 +48,9 @@ import java.util.ArrayList;
 public class Mazewar extends JFrame {
 	
 		private static boolean isMultiplayer = false;
-		private static String hostname;
-		private static int port;
+		private static String namingServiceHostname;
+		private static int namingServicePort;
+		private static int listenPort;
 		private static MazewarClient client;
 		private static ArrayList<String> peerList = new ArrayList<String>();
 
@@ -165,7 +166,8 @@ public class Mazewar extends JFrame {
                 
                 if (isMultiplayer) {
                 	guiClient.registerMazewarClient(client);
-                	client.start(peerList);
+                	client.start(peerList, listenPort);
+                	
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
                 } else {
@@ -242,12 +244,13 @@ public class Mazewar extends JFrame {
          */
         public static void main(String args[]) {
         	// TODO find better way to parse arguments
-        	if (args.length == 2) {
+        	if (args.length == 3) {
 	        	isMultiplayer = true;
-	        	hostname = args[0];
-	        	port = Integer.parseInt(args[1]);
+	        	namingServiceHostname = args[0];
+	        	namingServicePort = Integer.parseInt(args[1]);
+	        	listenPort = Integer.parseInt(args[2]);
 	        	client = new MazewarClient();
-            	Socket socket = client.connect(hostname, port);
+            	Socket socket = client.connect(namingServiceHostname, namingServicePort);
             	
 				try {
 					BufferedReader readStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
