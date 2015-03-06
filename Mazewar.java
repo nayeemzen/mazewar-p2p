@@ -164,6 +164,7 @@ public class Mazewar extends JFrame {
                 this.addKeyListener(guiClient);
                 
                 if (isMultiplayer) {
+                	guiClient.registerMazewarClient(client);
                 	client.start();
                 	
                 // Use braces to force constructors not to be called at the beginning of the
