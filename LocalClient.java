@@ -29,6 +29,8 @@ USA.
 
 
 public abstract class LocalClient extends Client {
+	
+		protected MazewarClient client = null;
 
         /** 
          * Create a {@link Client} local to this machine.
@@ -38,8 +40,27 @@ public abstract class LocalClient extends Client {
                 super(name);
                 assert(name != null);
         }
+        
+        public void registerMazewarClient(MazewarClient client) {
+			assert(client != null);
+			assert(this.client == null);
+			this.client = client;
+			client.sendEvent(this, ClientEvent.register);
+		}
 
-        /**
-         * Fill in here??
-         */
+        protected boolean forward() {
+        	return client.sendEvent(this, ClientEvent.moveForward);
+        }
+        
+        protected boolean backup() {
+        	return client.sendEvent(this, ClientEvent.moveBackward);
+        }
+        
+        protected void turnLeft() {
+        	client.sendEvent(this, ClientEvent.turnLeft);
+        }
+        
+        protected void turnRight() {
+        	client.sendEvent(this, ClientEvent.turnRight);
+        }
 }
