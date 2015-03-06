@@ -165,8 +165,7 @@ public class Mazewar extends JFrame {
                 
                 if (isMultiplayer) {
                 	guiClient.registerMazewarClient(client);
-                	client.start();
-                	
+                	client.start(peerList);
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
                 } else {

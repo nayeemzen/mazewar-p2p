@@ -2,15 +2,17 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MazewarClient {
 	
 	private Socket socket;
-	private ObjectOutputStream outStream;
+	private ConcurrentHashMap <String, ObjectOutputStream> peerList;
 	
 	MazewarClient() {
 		socket = null;
-		outStream = null;
+		peerList = null;
 	}
 	
 	public Socket connect(String hostname, int port) {
@@ -50,18 +52,45 @@ public class MazewarClient {
 			return false;
 		}
 		
-		try {
-			outStream.writeObject(payload);
-		} catch (IOException e) {
-			/* TODO how do we handle this? */
-			e.printStackTrace();
-			return false;
-		}
+		broadcast(payload);
 			
 		return true;
 	}
 	
-	public void start() {
-		//broadcast to the peers about game join
+	private void broadcast(MazewarPacket payload) {
+		assert peerList != null;
+		int acksExpected = 0;
+		int lamportTimestamp;
+		// TODO: Tag with Lamport Timestamp
+		for(ObjectOutputStream writeStream : peerList.values()) {
+			synchronized(writeStream) {
+				try {
+					writeStream.writeObject(payload);
+					acksExpected++;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void connectToPeers(ArrayList<String> peerList) {
+		this.peerList = new ConcurrentHashMap <String, ObjectOutputStream>();
+		for(String peer: peerList) {
+			if(this.peerList.containsKey(peer)) continue;
+			// Host and port are hyphen separated
+			String [] connectionInfo = peer.split("-");
+			Socket socket;
+			try {
+				socket = new Socket(connectionInfo[0], Integer.parseInt(connectionInfo[1]));
+				this.peerList.put(peer, new ObjectOutputStream(socket.getOutputStream()));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}	
+		}
+	}
+	
+	public void start(ArrayList <String> peerList) {
+		connectToPeers(peerList);
 	}
 }
