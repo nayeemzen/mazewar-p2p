@@ -93,7 +93,7 @@ public class MazewarClient {
 	public void start(ArrayList <String> peerList, int port) {
 		connectToPeers(peerList);
 		try {
-			(new Thread (new MazewarServer(port, this.peerList))).start();
+			(new Thread (new MazewarServer(this, port, this.peerList))).start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
