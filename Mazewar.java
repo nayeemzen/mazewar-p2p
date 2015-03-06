@@ -254,6 +254,13 @@ public class Mazewar extends JFrame {
             	
 				try {
 					BufferedReader readStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+					BufferedWriter writeStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+					
+					// Send join message to the naming service
+					writeStream.write("join " + listenPort);
+					writeStream.newLine();
+					writeStream.flush();
+					
 					String[] peers = readStream.readLine()
 									.replace("[", "")
 									.replace("]", "")

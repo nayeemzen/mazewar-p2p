@@ -21,19 +21,9 @@ public class NamingService {
 			Socket clientSocket = null;
 			try {
 				clientSocket = serverSocket.accept();
+				(new Thread (new NamingServiceClientHandler(clientSocket, connectedClients))).start();
 			} catch (IOException e) {
 				System.err.println("Error: error accepting client connection");
-				e.printStackTrace();
-			}
-			
-			try {
-				BufferedWriter writeStream = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-				connectedClients.add(clientSocket.getInetAddress().toString() + "-" + clientSocket.getPort());
-				writeStream.write(connectedClients.toString());
-				writeStream.newLine();
-				writeStream.flush();
-				writeStream.close();
-			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
