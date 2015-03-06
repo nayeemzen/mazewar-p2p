@@ -9,25 +9,12 @@ public class MazewarClient {
 	
 	private Socket socket;
 	private ConcurrentHashMap <String, ObjectOutputStream> peerList;
+	private int clientId;
 	
-	MazewarClient() {
+	MazewarClient(int clientId) {
 		socket = null;
 		peerList = null;
-	}
-	
-	public Socket connect(String hostname, int port) {
-		try {
-			socket = new Socket(hostname, port);
-			//outStream = new ObjectOutputStream(socket.getOutputStream());
-		} catch (UnknownHostException e) {
-			System.err.println("ERROR: Don't know where to connect!!");
-			System.exit(1);
-		} catch (IOException e) {
-			System.err.println("ERROR: Couldn't get I/O for the connection.");
-			System.exit(1);
-		}
-		
-		return socket;
+		this.clientId = clientId;
 	}
 
 	public boolean sendEvent(LocalClient client, ClientEvent clientevent) {

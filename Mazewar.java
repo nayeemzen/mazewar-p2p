@@ -249,10 +249,9 @@ public class Mazewar extends JFrame {
 	        	namingServiceHostname = args[0];
 	        	namingServicePort = Integer.parseInt(args[1]);
 	        	listenPort = Integer.parseInt(args[2]);
-	        	client = new MazewarClient();
-            	Socket socket = client.connect(namingServiceHostname, namingServicePort);
             	
 				try {
+					Socket socket = new Socket(namingServiceHostname, namingServicePort);
 					BufferedReader readStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 					BufferedWriter writeStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 					
@@ -261,7 +260,9 @@ public class Mazewar extends JFrame {
 					writeStream.newLine();
 					writeStream.flush();
 					
-					String[] peers = readStream.readLine()
+					String[] response = readStream.readLine().split(" ");
+					client = new MazewarClient(Integer.parseInt(response[0]));
+					String[] peers = response[1]
 									.replace("[", "")
 									.replace("]", "")
 									.replace("/", "")
@@ -269,6 +270,7 @@ public class Mazewar extends JFrame {
 					for(String peer: peers) {
 						peerList.add(peer);
 					}
+					System.out.println(response[0]);
 					System.out.println(peerList);
 				} catch (IOException e) {
 					e.printStackTrace();
