@@ -25,7 +25,7 @@ public class MazewarPacket implements Serializable {
 	public static final int ERROR_CLIENT_ALREADY_EXISTS  = -101;
 	
 	/* Packet information variables */
-	public int sequenceNumber;
+	public int timestamp;
 	public int eventType;
 	public int errorCode;
 	
