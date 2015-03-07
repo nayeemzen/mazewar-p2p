@@ -34,9 +34,10 @@ public class MazewarPacket implements Serializable {
 	public int eventType;
 	public int errorCode;
 	public int packetType;
+	public String md5;
 	
 	/* Client information variables */
-	public int PID;
+	public int clientId;
 	public int score;
 	
 }

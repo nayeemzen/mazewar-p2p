@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MazewarClient {
 	
@@ -13,19 +14,26 @@ public class MazewarClient {
 	private int clientId;
 	public ConcurrentHashMap <String, ObjectOutputStream> peerList;
 	public static PriorityQueue<MazewarPacket> eventQueue;
-	public static ConcurrentHashMap <MazewarPacket, Integer> ackMap;
+	public static ConcurrentHashMap <String, Integer> ackMap;
+	public static ConcurrentHashMap <String, Boolean> releaseMap;
+	public static AtomicInteger lamportClock;
 	
 	MazewarClient(int clientId) {
 		socket = null;
 		peerList = null;
 		this.clientId = clientId;
-		ackMap = new ConcurrentHashMap <MazewarPacket, Integer>();
+		lamportClock = new AtomicInteger(0);
+		
+		ackMap = new ConcurrentHashMap <String, Integer>();
+		releaseMap = new ConcurrentHashMap <String, Boolean>();
+		
 		eventQueue = new PriorityQueue<MazewarPacket>(0, new Comparator <MazewarPacket> () {
 			public int compare(MazewarPacket o1, MazewarPacket o2) {	
-				int compare = o1.timestamp - o2.timestamp;
-				return compare == 0 ?  (o1.PID - o2.PID) : compare;
+				int compareVal = o1.timestamp - o2.timestamp;
+				return compareVal == 0 ?  (o1.clientId - o2.clientId) : compareVal;
 			}
 		});
+		
 	}
 
 	public boolean sendEvent(LocalClient client, ClientEvent clientevent) {
@@ -90,10 +98,10 @@ public class MazewarClient {
 	
 	public void start(ArrayList <String> peerList, int port) {
 		connectToPeers(peerList);
-		/*try {
+		try {
 			(new Thread (new MazewarServer(this, port))).start();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}*/
+		}
 	}
 }

@@ -1,14 +1,19 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-
+import java.lang.Math;
 
 public class IncomingMessageListenerThread implements Runnable {
 	
 	private final ObjectInputStream readStream;
-
+	private final ObjectOutputStream writeStream;
+	private MazewarClient client;
+	
 	IncomingMessageListenerThread(MazewarClient client, Socket socket) throws IOException {
-		readStream = new ObjectInputStream(socket.getInputStream()); 
+		readStream = new ObjectInputStream(socket.getInputStream());
+		writeStream = new ObjectOutputStream(socket.getOutputStream());
+		this.client = client;
 	}
 	
 	public void run() {
@@ -24,12 +29,21 @@ public class IncomingMessageListenerThread implements Runnable {
 			e.printStackTrace();
 		}
 	}
-
-	private void handleReceivedPacket(MazewarPacket packetFromClient) {
+	
+	private void handleReceivedPacket(MazewarPacket packetFromClient) throws IOException {
+		
 		if (packetFromClient.packetType == packetFromClient.REQUEST) {
-			// increment Lamport
-			// insert into priority queue
-			// send ack
+			// Update Lamport clock
+			synchronized(client) {
+				int lamportTimestamp = 1 + Math.max(packetFromClient.timestamp, MazewarClient.lamportClock.get());
+				MazewarClient.lamportClock.set(lamportTimestamp);
+				packetFromClient.timestamp = MazewarClient.lamportClock.get();
+			}
+			
+			MazewarClient.eventQueue.add(packetFromClient);
+			MazewarClient.releaseMap.put(packetFromClient.md5, false);
+			packetFromClient.packetType = MazewarPacket.ACK;
+			writeStream.writeObject(packetFromClient);
 		} else if (packetFromClient.packetType == packetFromClient.ACK) {
 			
 		} else if (packetFromClient.packetType == packetFromClient.RELEASE) {

@@ -12,7 +12,7 @@ public class MazewarServer implements Runnable {
 	private ConcurrentHashMap <String, ObjectOutputStream> peerList;
 	private MazewarClient client;
 	
-	MazewarServer(MazewarClient client, int port, ConcurrentHashMap <String, ObjectOutputStream> peerList) throws IOException {
+	MazewarServer(MazewarClient client, int port) throws IOException {
 		serverSocket = new ServerSocket(port);
 		this.peerList = peerList;
 		this.client = client;

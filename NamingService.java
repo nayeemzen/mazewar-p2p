@@ -28,7 +28,6 @@ public class NamingService {
 				System.err.println("Error: error accepting client connection");
 				e.printStackTrace();
 			}
-			
 		}
 	}
 	
