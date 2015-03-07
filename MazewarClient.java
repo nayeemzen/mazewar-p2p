@@ -3,23 +3,34 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MazewarClient {
 	
 	private Socket socket;
-	private ConcurrentHashMap <String, ObjectOutputStream> peerList;
 	private int clientId;
+	public ConcurrentHashMap <String, ObjectOutputStream> peerList;
+	public static PriorityQueue<MazewarPacket> eventQueue;
+	public static ConcurrentHashMap <MazewarPacket, Integer> ackMap;
 	
 	MazewarClient(int clientId) {
 		socket = null;
 		peerList = null;
 		this.clientId = clientId;
+		ackMap = new ConcurrentHashMap <MazewarPacket, Integer>();
+		eventQueue = new PriorityQueue<MazewarPacket>(0, new Comparator <MazewarPacket> () {
+			public int compare(MazewarPacket o1, MazewarPacket o2) {	
+				int compare = o1.timestamp - o2.timestamp;
+				return compare == 0 ?  (o1.PID - o2.PID) : compare;
+			}
+		});
 	}
 
 	public boolean sendEvent(LocalClient client, ClientEvent clientevent) {
 		MazewarPacket payload = new MazewarPacket();
-		payload.clientName = client.getName();
+		// payload.clientName = client.getName();
 		
 		if (clientevent.equals(ClientEvent.moveForward)) {
 			payload.eventType = MazewarPacket.ACTION_MOVE_UP;
@@ -79,10 +90,10 @@ public class MazewarClient {
 	
 	public void start(ArrayList <String> peerList, int port) {
 		connectToPeers(peerList);
-		try {
-			(new Thread (new MazewarServer(this, port, this.peerList))).start();
+		/*try {
+			(new Thread (new MazewarServer(this, port))).start();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 }

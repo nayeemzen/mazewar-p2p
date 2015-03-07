@@ -7,7 +7,7 @@ public class IncomingMessageListenerThread implements Runnable {
 	
 	private final ObjectInputStream readStream;
 
-	IncomingMessageListenerThread(Socket socket) throws IOException {
+	IncomingMessageListenerThread(MazewarClient client, Socket socket) throws IOException {
 		readStream = new ObjectInputStream(socket.getInputStream()); 
 	}
 	
@@ -26,7 +26,15 @@ public class IncomingMessageListenerThread implements Runnable {
 	}
 
 	private void handleReceivedPacket(MazewarPacket packetFromClient) {
-		// TODO Auto-generated method stub
+		if (packetFromClient.packetType == packetFromClient.REQUEST) {
+			// increment Lamport
+			// insert into priority queue
+			// send ack
+		} else if (packetFromClient.packetType == packetFromClient.ACK) {
+			
+		} else if (packetFromClient.packetType == packetFromClient.RELEASE) {
+			
+		}
 		
 	}
 

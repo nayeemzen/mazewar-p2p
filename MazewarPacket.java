@@ -18,6 +18,11 @@ public class MazewarPacket implements Serializable {
 	public static final int BEGIN		= 301;
 	public static final int ERROR		= 302;
 	public static final int QUIT	 	= 303;
+	
+	/* Packet Types (for Distributed Mutex) */
+	public static final int REQUEST = 400;
+	public static final int ACK = 401;
+	public static final int RELEASE = 402;
 
 	
 	/* Error codes */
@@ -28,9 +33,10 @@ public class MazewarPacket implements Serializable {
 	public int timestamp;
 	public int eventType;
 	public int errorCode;
+	public int packetType;
 	
 	/* Client information variables */
-	public String clientName;
+	public int PID;
 	public int score;
 	
 }

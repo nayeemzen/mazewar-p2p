@@ -249,7 +249,7 @@ public class Mazewar extends JFrame {
 	        	namingServiceHostname = args[0];
 	        	namingServicePort = Integer.parseInt(args[1]);
 	        	listenPort = Integer.parseInt(args[2]);
-            	
+	        	
 				try {
 					Socket socket = new Socket(namingServiceHostname, namingServicePort);
 					BufferedReader readStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
