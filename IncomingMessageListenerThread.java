@@ -40,14 +40,16 @@ public class IncomingMessageListenerThread implements Runnable {
 				packetFromClient.timestamp = MazewarClient.lamportClock.get();
 			}
 			
+			MazewarClient.waitlist.add(packetFromClient.md5);
 			MazewarClient.eventQueue.add(packetFromClient);
-			MazewarClient.releaseMap.put(packetFromClient.md5, false);
 			packetFromClient.packetType = MazewarPacket.ACK;
+			
+			// Send acknowledgement
 			writeStream.writeObject(packetFromClient);
 		} else if (packetFromClient.packetType == packetFromClient.ACK) {
 			
 		} else if (packetFromClient.packetType == packetFromClient.RELEASE) {
-			
+			MazewarClient.waitlist.remove(packetFromClient.md5);
 		}
 		
 	}

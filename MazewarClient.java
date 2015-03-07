@@ -3,8 +3,10 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,7 +17,7 @@ public class MazewarClient {
 	public ConcurrentHashMap <String, ObjectOutputStream> peerList;
 	public static PriorityQueue<MazewarPacket> eventQueue;
 	public static ConcurrentHashMap <String, Integer> ackMap;
-	public static ConcurrentHashMap <String, Boolean> releaseMap;
+	public static Set<String> waitlist;
 	public static AtomicInteger lamportClock;
 	
 	MazewarClient(int clientId) {
@@ -25,7 +27,7 @@ public class MazewarClient {
 		lamportClock = new AtomicInteger(0);
 		
 		ackMap = new ConcurrentHashMap <String, Integer>();
-		releaseMap = new ConcurrentHashMap <String, Boolean>();
+		waitlist = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 		
 		eventQueue = new PriorityQueue<MazewarPacket>(0, new Comparator <MazewarPacket> () {
 			public int compare(MazewarPacket o1, MazewarPacket o2) {	
@@ -90,6 +92,7 @@ public class MazewarClient {
 			try {
 				socket = new Socket(connectionInfo[0], Integer.parseInt(connectionInfo[1]));
 				this.peerList.put(peer, new ObjectOutputStream(socket.getOutputStream()));
+				(new Thread (new IncomingMessageListenerThread(this, socket))).start();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	
