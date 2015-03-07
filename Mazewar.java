@@ -161,7 +161,7 @@ public class Mazewar extends JFrame {
                 
                 // Create the GUIClient and connect it to the KeyListener queue
                 guiClient = new GUIClient(name);
-                //maze.addClient(guiClient);
+                maze.addClient(guiClient);
                 this.addKeyListener(guiClient);
                 
                 if (isMultiplayer) {
@@ -267,7 +267,9 @@ public class Mazewar extends JFrame {
 									.replace("]", "")
 									.replace("/", "")
 									.split(",");
+					
 					for(String peer: peers) {
+						if(!peer.isEmpty())
 						peerList.add(peer);
 					}
 					System.out.println(response[0]);
