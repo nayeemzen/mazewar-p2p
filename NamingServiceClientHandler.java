@@ -50,6 +50,7 @@ public class NamingServiceClientHandler implements Runnable {
 			writeStream.write(NamingService.idCount.incrementAndGet() + " " + connectedClients.toString());
 			writeStream.newLine();
 			writeStream.flush();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

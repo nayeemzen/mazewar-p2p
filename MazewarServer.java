@@ -14,7 +14,7 @@ public class MazewarServer implements Runnable {
 	
 	MazewarServer(MazewarClient client, int port) throws IOException {
 		serverSocket = new ServerSocket(port);
-		this.peerList = peerList;
+		this.peerList = client.peerList;
 		this.client = client;
 	}
 	
@@ -24,18 +24,14 @@ public class MazewarServer implements Runnable {
 			Socket clientSocket = null;
 			try {
 				clientSocket = serverSocket.accept();
-			} catch (IOException e) {
-				System.err.println("Error: error accepting client connection");
-				e.printStackTrace();
-			}
-			
-			ObjectOutputStream outStream;
-			try {
+				System.out.println("new client " + clientSocket.getPort());
+				
+				ObjectOutputStream outStream;
 				outStream = new ObjectOutputStream(clientSocket.getOutputStream());
 				peerList.put(clientSocket.getInetAddress().toString() + "-" + clientSocket.getPort(), outStream);
 				(new Thread (new IncomingMessageListenerThread(client, clientSocket))).start();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				System.err.println("Error: error accepting client connection");
 				e.printStackTrace();
 			}
 		}

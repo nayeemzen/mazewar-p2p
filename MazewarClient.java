@@ -29,7 +29,7 @@ public class MazewarClient {
 		ackMap = new ConcurrentHashMap <String, Integer>();
 		waitlist = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 		
-		eventQueue = new PriorityQueue<MazewarPacket>(0, new Comparator <MazewarPacket> () {
+		eventQueue = new PriorityQueue<MazewarPacket>(10, new Comparator <MazewarPacket> () {
 			public int compare(MazewarPacket o1, MazewarPacket o2) {	
 				int compareVal = o1.timestamp - o2.timestamp;
 				return compareVal == 0 ?  (o1.clientId - o2.clientId) : compareVal;
@@ -80,14 +80,18 @@ public class MazewarClient {
 				}
 			}
 		}
+		
+		ackMap.put(payload.md5, acksExpected);
 	}
 
 	private void connectToPeers(ArrayList<String> peerList) {
 		this.peerList = new ConcurrentHashMap <String, ObjectOutputStream>();
+		System.out.println(peerList.size());
 		for(String peer: peerList) {
 			if(this.peerList.containsKey(peer)) continue;
 			// Host and port are hyphen separated
 			String [] connectionInfo = peer.split("-");
+			System.out.println(peer);
 			Socket socket;
 			try {
 				socket = new Socket(connectionInfo[0], Integer.parseInt(connectionInfo[1]));
