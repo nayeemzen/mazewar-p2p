@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class NamingServicePacket implements Serializable {
 	public int clientID;
+	public String clientName;
 	public int port;
 	public String packetType;
 	public ArrayList <String> connectedClients;
@@ -13,9 +14,10 @@ public class NamingServicePacket implements Serializable {
 		this.connectedClients = connectedClients;
 	}
 	
-	NamingServicePacket(String packetType, int port) {
+	NamingServicePacket(String packetType, String clientName, int port) {
 		this.packetType = packetType;
 		this.port = port;
+		this.clientName = clientName;
 	}
 	
 	public String toString() {

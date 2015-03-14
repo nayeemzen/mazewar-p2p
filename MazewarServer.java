@@ -28,6 +28,7 @@ public class MazewarServer implements Runnable {
 				System.out.println("new client " + clientSocket.getPort());
 				
 				ObjectOutputStream writeStream = new ObjectOutputStream(clientSocket.getOutputStream());
+				// send client name to new client
 				writeStream.flush();
 				ObjectInputStream readStream = new ObjectInputStream(clientSocket.getInputStream());
 				

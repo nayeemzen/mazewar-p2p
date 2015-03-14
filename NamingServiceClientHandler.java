@@ -36,15 +36,17 @@ public class NamingServiceClientHandler implements Runnable {
 	private void handleJoin(NamingServicePacket parameters) {
 		if (joined) return;
 		
+		int clientId = NamingService.idCount.incrementAndGet();
 		try {
-			NamingServicePacket packet = new NamingServicePacket(NamingService.idCount.incrementAndGet(), connectedClients);
+			NamingServicePacket packet = new NamingServicePacket(clientId, connectedClients);
 			writeStream.writeObject(packet);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		connectedClients.add(clientSocket.getInetAddress().toString() + "-" + parameters.port);
+		String clientInfo = clientSocket.getInetAddress().toString() + "-" + parameters.port + "-" + parameters.clientName + "-" + clientId;
+		connectedClients.add(clientInfo);
 		joined = true;
 	}
 

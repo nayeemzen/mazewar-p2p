@@ -58,9 +58,11 @@ public class IncomingMessageListenerThread implements Runnable {
 			
 			if(MazewarClient.ackMap.get(packetFromClient.packetId) == 0) {
 				client.releaseBroadcast(packetFromClient);
+				MazewarClient.ackMap.remove(packetFromClient.packetId);
 			}
 			
 		} else if (packetFromClient.packetType == packetFromClient.RELEASE) {
+			System.out.println("GOT RELEASE!!!");
 			MazewarClient.waitlist.remove(packetFromClient.packetId);
 		}
 		

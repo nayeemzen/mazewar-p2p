@@ -54,7 +54,7 @@ public class Mazewar extends JFrame {
 		private static int namingServicePort;
 		private static int listenPort;
 		private static MazewarClient client;
-		private static ArrayList<String> peerList = new ArrayList<String>();
+		private ArrayList<String> peerList = new ArrayList<String>();
 
         /**
          * The default width of the {@link Maze}.
@@ -160,19 +160,19 @@ public class Mazewar extends JFrame {
                 
                 // You may want to put your network initialization code somewhere in
                 // here.
-                
-                // Create the GUIClient and connect it to the KeyListener queue
                 guiClient = new GUIClient(name);
-                maze.addClient(guiClient);
-                this.addKeyListener(guiClient);
                 
                 if (isMultiplayer) {
-                	guiClient.registerMazewarClient(client);
+                	initializeClient(name);
+                	client.clientName = name;
+                    client.addMaze(maze); // Add maze to MazewarClient
                 	client.start(peerList, listenPort);
-                	
-                // Use braces to force constructors not to be called at the beginning of the
-                // constructor.
+                    maze.addClient(guiClient, client.clientId);
+                    this.addKeyListener(guiClient);
+                	guiClient.registerMazewarClient(client);
                 } else {
+                        maze.addClient(guiClient);
+                        this.addKeyListener(guiClient);
                         maze.addClient(new RobotClient("Norby"));
                         maze.addClient(new RobotClient("Robbie"));
                         maze.addClient(new RobotClient("Clango"));
@@ -240,7 +240,37 @@ public class Mazewar extends JFrame {
         }
 
         
-        /**
+        private void initializeClient(String name) {
+        	try {
+				Socket socket = new Socket(namingServiceHostname, namingServicePort);
+				ObjectInputStream readStream = new ObjectInputStream(socket.getInputStream());
+				ObjectOutputStream writeStream = new ObjectOutputStream(socket.getOutputStream());
+				
+				// Send join message to the naming service
+				
+				NamingServicePacket joinPacket = new NamingServicePacket("join", name, listenPort); 
+				writeStream.writeObject(joinPacket);
+				
+				NamingServicePacket response;
+				response = (NamingServicePacket)readStream.readObject();
+				System.out.println(response);
+				for(String peer: response.connectedClients) {
+					if(!peer.isEmpty())
+					peerList.add(peer.replace("/", ""));
+				}
+				
+				client = new MazewarClient(response.clientID);
+                // Create the GUIClient and connect it to the KeyListener queue
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				return;
+			}			
+		}
+
+		/**
          * Entry point for the game.  
          * @param args Command-line arguments.
          */
@@ -251,33 +281,6 @@ public class Mazewar extends JFrame {
 	        	namingServiceHostname = args[0];
 	        	namingServicePort = Integer.parseInt(args[1]);
 	        	listenPort = Integer.parseInt(args[2]);
-	        	
-				try {
-					Socket socket = new Socket(namingServiceHostname, namingServicePort);
-					ObjectInputStream readStream = new ObjectInputStream(socket.getInputStream());
-					ObjectOutputStream writeStream = new ObjectOutputStream(socket.getOutputStream());
-					
-					// Send join message to the naming service
-					
-					NamingServicePacket joinPacket = new NamingServicePacket("join", listenPort); 
-					writeStream.writeObject(joinPacket);
-					
-					NamingServicePacket response;
-					response = (NamingServicePacket)readStream.readObject();
-					System.out.println(response);
-					for(String peer: response.connectedClients) {
-						if(!peer.isEmpty())
-						peerList.add(peer.replace("/", ""));
-					}
-					
-					client = new MazewarClient(response.clientID);
-				} catch (IOException e) {
-					e.printStackTrace();
-					return;
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-					return;
-				}
         	}
         	
             /* Create the GUI */

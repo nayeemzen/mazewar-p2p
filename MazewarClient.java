@@ -9,15 +9,18 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.UUID;
 
 public class MazewarClient {
 	
 	private Socket socket;
-	private int clientId;
+	public int clientId;
+	public String clientName;
 	public ConcurrentHashMap <String, ObjectOutputStream> peerList;
-	public static PriorityQueue<MazewarPacket> eventQueue;
+	private MazeImpl maze;
+	public static PriorityBlockingQueue<MazewarPacket> eventQueue;
 	public static ConcurrentHashMap <String, Integer> ackMap;
 	public static Set<String> waitlist;
 	public static AtomicInteger lamportClock;
@@ -25,19 +28,23 @@ public class MazewarClient {
 	MazewarClient(int clientId) {
 		socket = null;
 		peerList = null;
+		maze = null;
 		this.clientId = clientId;
 		lamportClock = new AtomicInteger(0);
-		
 		ackMap = new ConcurrentHashMap <String, Integer>();
 		waitlist = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 		
-		eventQueue = new PriorityQueue<MazewarPacket>(10, new Comparator <MazewarPacket> () {
+		eventQueue = new PriorityBlockingQueue<MazewarPacket>(10, new Comparator <MazewarPacket> () {
 			public int compare(MazewarPacket o1, MazewarPacket o2) {	
 				int compareVal = o1.timestamp - o2.timestamp;
 				return compareVal == 0 ?  (o1.clientId - o2.clientId) : compareVal;
 			}
 		});
 		
+	}
+	
+	public void addMaze(Maze maze) {
+		this.maze = (MazeImpl)maze;
 	}
 
 	public boolean sendEvent(LocalClient client, ClientEvent clientevent) {
@@ -53,20 +60,24 @@ public class MazewarClient {
 			payload.eventType = MazewarPacket.ACTION_TURN_RIGHT;
 		} else if (clientevent.equals(ClientEvent.fire)) {
 			payload.eventType = MazewarPacket.ACTION_FIRE_PROJECTILE;
-		/*} else if (clientevent.equals(ClientEvent.register)) {
+		} else if (clientevent.equals(ClientEvent.register)) {
 			payload.eventType = MazewarPacket.REGISTER;
 		} else if (clientevent.equals(ClientEvent.quit)) {
-			payload.eventType = MazewarPacket.QUIT;*/
+			payload.eventType = MazewarPacket.QUIT;
 		} else {	
 			return false;
 		}
 		
 		requestBroadcast(payload);
-			
+		if(!clientevent.equals(ClientEvent.register))
+			eventQueue.add(payload);
 		return true;
 	}
 	
 	public void requestBroadcast(MazewarPacket payload) {
+		payload.clientId = clientId;
+		payload.clientName = clientName;
+		payload.packetType = MazewarPacket.REQUEST;
 		payload.packetId = UUID.randomUUID().toString();
 		payload.timestamp = lamportClock.incrementAndGet();
 		int acksExpected = broadcast(payload);
@@ -98,19 +109,30 @@ public class MazewarClient {
 
 	private void connectToPeers(ArrayList<String> peerList) {
 		this.peerList = new ConcurrentHashMap <String, ObjectOutputStream>();
-		System.out.println(peerList.size());
+		System.out.println("Peer size:" + peerList.size());
+		
 		for(String peer: peerList) {
 			if(this.peerList.containsKey(peer)) continue;
-			// Host and port are hyphen separated
+			// Host, port, name are hyphen separated
 			String [] connectionInfo = peer.split("-");
+			
+			String hostname = connectionInfo[0];
+			String clientName = connectionInfo[2];
+			int port = Integer.parseInt(connectionInfo[1]);
+			int clientId = Integer.parseInt(connectionInfo[3]);
+			
 			System.out.println(peer);
 			Socket socket;
 			try {
-				System.out.println(connectionInfo[0] + " " + connectionInfo[1]);
-				socket = new Socket(connectionInfo[0], Integer.parseInt(connectionInfo[1]));
+				System.out.println(hostname + " " + port);
+				socket = new Socket(hostname, port);
 				ObjectInputStream readStream = new ObjectInputStream(socket.getInputStream());
 				ObjectOutputStream writeStream = new ObjectOutputStream(socket.getOutputStream());
+				
 				this.peerList.put(peer, writeStream);
+				RemoteClient client = new RemoteClient(clientName);
+				maze.addClient(client, clientId);
+				
 				(new Thread (new IncomingMessageListenerThread(this, readStream, writeStream))).start();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -122,6 +144,7 @@ public class MazewarClient {
 		connectToPeers(peerList);
 		try {
 			(new Thread (new MazewarServer(this, port))).start();
+			(new Thread (new EventQueueListener(maze))).start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
