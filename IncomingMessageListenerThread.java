@@ -42,17 +42,23 @@ public class IncomingMessageListenerThread implements Runnable {
 			
 			MazewarClient.waitlist.add(packetFromClient.md5);
 			MazewarClient.eventQueue.add(packetFromClient);
-			packetFromClient.packetType = MazewarPacket.ACK;
 			
 			// Send acknowledgement
+			packetFromClient.packetType = MazewarPacket.ACK;
 			writeStream.writeObject(packetFromClient);
 		} else if (packetFromClient.packetType == packetFromClient.ACK) {
 			synchronized(MazewarClient.ackMap) {
-				if (MazewarClient.ackMap.containsKey(packetFromClient.md5)) {
+				assert(MazewarClient.ackMap.containsKey(packetFromClient.md5));
+				if (MazewarClient.ackMap.get(packetFromClient.md5) > 0) {
 					int count = MazewarClient.ackMap.get(packetFromClient.md5);
 					MazewarClient.ackMap.put(packetFromClient.md5, --count);
 				}
 			}
+			
+			if(MazewarClient.ackMap.get(packetFromClient.md5) == 0) {
+				client.releaseBroadcast(packetFromClient);
+			}
+			
 		} else if (packetFromClient.packetType == packetFromClient.RELEASE) {
 			MazewarClient.waitlist.remove(packetFromClient.md5);
 		}

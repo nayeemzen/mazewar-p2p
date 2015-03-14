@@ -9,6 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.security.*;
 
 public class MazewarClient {
 	
@@ -60,16 +61,26 @@ public class MazewarClient {
 			return false;
 		}
 		
-		broadcast(payload);
+		requestBroadcast(payload);
 			
 		return true;
 	}
 	
-	private void broadcast(MazewarPacket payload) {
+	public void requestBroadcast(MazewarPacket payload) {
+		payload.timestamp = lamportClock.incrementAndGet();
+		int acksExpected = broadcast(payload);
+		ackMap.put(payload.md5, acksExpected);
+	}
+	
+	public void releaseBroadcast(MazewarPacket payload) {
+		MazewarPacket packet = new MazewarPacket(payload);
+		packet.packetType = MazewarPacket.RELEASE;
+		broadcast(packet);
+	}
+	
+	private int broadcast(MazewarPacket payload) {
 		assert peerList != null;
 		int acksExpected = 0;
-		int lamportTimestamp;
-		// TODO: Tag with Lamport Timestamp
 		for(ObjectOutputStream writeStream : peerList.values()) {
 			synchronized(writeStream) {
 				try {
@@ -81,7 +92,7 @@ public class MazewarClient {
 			}
 		}
 		
-		ackMap.put(payload.md5, acksExpected);
+		return acksExpected;
 	}
 
 	private void connectToPeers(ArrayList<String> peerList) {

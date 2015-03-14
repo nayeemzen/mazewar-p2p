@@ -2,6 +2,20 @@ import java.io.Serializable;
 
 public class MazewarPacket implements Serializable {
 	
+	public MazewarPacket() {}
+	
+	public MazewarPacket(MazewarPacket packet) {
+		clientId = packet.clientId;
+		timestamp = packet.timestamp;
+		eventType = packet.eventType;
+		errorCode = packet.errorCode;
+		packetType = packet.packetType;
+		md5 = packet.md5;
+		clientName = packet.clientName;
+		clientId = packet.clientId;
+		score = packet.score;	
+	}
+	
 	/* Client action events */
 	public static final int ACTION_TURN_LEFT  		= 101;
 	public static final int ACTION_TURN_RIGHT 		= 102;
