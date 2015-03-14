@@ -10,9 +10,9 @@ public class IncomingMessageListenerThread implements Runnable {
 	private final ObjectOutputStream writeStream;
 	private MazewarClient client;
 	
-	IncomingMessageListenerThread(MazewarClient client, Socket socket) throws IOException {
-		readStream = new ObjectInputStream(socket.getInputStream());
-		writeStream = new ObjectOutputStream(socket.getOutputStream());
+	IncomingMessageListenerThread(MazewarClient client, ObjectInputStream readStream, ObjectOutputStream writeStream) throws IOException {
+		this.readStream = readStream;
+		this.writeStream = writeStream;
 		this.client = client;
 	}
 	

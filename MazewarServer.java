@@ -1,5 +1,6 @@
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
@@ -26,10 +27,12 @@ public class MazewarServer implements Runnable {
 				clientSocket = serverSocket.accept();
 				System.out.println("new client " + clientSocket.getPort());
 				
-				ObjectOutputStream outStream;
-				outStream = new ObjectOutputStream(clientSocket.getOutputStream());
-				peerList.put(clientSocket.getInetAddress().toString() + "-" + clientSocket.getPort(), outStream);
-				(new Thread (new IncomingMessageListenerThread(client, clientSocket))).start();
+				ObjectOutputStream writeStream = new ObjectOutputStream(clientSocket.getOutputStream());
+				writeStream.flush();
+				ObjectInputStream readStream = new ObjectInputStream(clientSocket.getInputStream());
+				
+				peerList.put(clientSocket.getInetAddress().toString() + "-" + clientSocket.getPort(), writeStream);
+				(new Thread (new IncomingMessageListenerThread(client, readStream, writeStream))).start();
 			} catch (IOException e) {
 				System.err.println("Error: error accepting client connection");
 				e.printStackTrace();

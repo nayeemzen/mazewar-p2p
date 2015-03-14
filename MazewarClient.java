@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -106,8 +107,10 @@ public class MazewarClient {
 			Socket socket;
 			try {
 				socket = new Socket(connectionInfo[0], Integer.parseInt(connectionInfo[1]));
-				this.peerList.put(peer, new ObjectOutputStream(socket.getOutputStream()));
-				(new Thread (new IncomingMessageListenerThread(this, socket))).start();
+				ObjectInputStream readStream = new ObjectInputStream(socket.getInputStream());
+				ObjectOutputStream writeStream = new ObjectOutputStream(socket.getOutputStream());
+				this.peerList.put(peer, writeStream);
+				(new Thread (new IncomingMessageListenerThread(this, readStream, writeStream))).start();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	
