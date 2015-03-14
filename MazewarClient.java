@@ -136,6 +136,7 @@ public class MazewarClient {
 				
 				this.peerList.put(peer, writeStream);
 				RemoteClient client = new RemoteClient(clientName);
+				EventQueueListener.remoteClients.put(clientId, client);
 				maze.addClient(client, clientId);
 				
 				(new Thread (new IncomingMessageListenerThread(this, readStream, writeStream))).start();

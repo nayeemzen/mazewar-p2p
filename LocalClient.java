@@ -48,19 +48,46 @@ public abstract class LocalClient extends Client {
 			client.sendEvent(this, ClientEvent.register);
 		}
 
+
         protected boolean forward() {
-        	return client.sendEvent(this, ClientEvent.moveForward);
+        	return super.forward();
         }
         
+        /**
+         * Move the client backward.
+         * @return <code>true</code> if move was successful, otherwise <code>false</code>.
+         */
         protected boolean backup() {
-        	return client.sendEvent(this, ClientEvent.moveBackward);
+        	return super.backup();
         }
         
+        /**
+         * Turn the client ninety degrees counter-clockwise.
+         */
         protected void turnLeft() {
-        	client.sendEvent(this, ClientEvent.turnLeft);
+        	super.turnLeft();
         }
         
+        /**
+         * Turn the client ninety degrees clockwise.
+         */
         protected void turnRight() {
-        	client.sendEvent(this, ClientEvent.turnRight);
+        	super.turnRight();
         }
+        
+        /**
+         * Fire a projectile.
+         * @return <code>true</code> if a projectile was successfully launched, otherwise <code>false</code>.
+         */
+        
+        // TODO(Zen): Fix firing
+        /*protected boolean fire() {
+        	if (isPlayable) {
+        		return super.fire();
+        	} else if (maze.clientFire(this)) {
+        		return client.sendEvent(this, ClientEvent.fire);
+        	}
+        	
+        	return false;
+       }*/
 }

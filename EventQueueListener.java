@@ -1,16 +1,16 @@
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class EventQueueListener implements Runnable {
 	
 	private Maze maze;
 	private GUIClient localClient;
-	private HashMap<Integer, RemoteClient> remoteClients;
+	public static ConcurrentHashMap<Integer, RemoteClient> remoteClients  = new ConcurrentHashMap<Integer, RemoteClient>();
 	
 	public EventQueueListener(Maze maze, GUIClient localClient) {
 		this.maze = maze;
 		this.localClient = localClient;
-		remoteClients = new HashMap<Integer, RemoteClient>();
 	}
 
 	public void run() {

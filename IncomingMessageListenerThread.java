@@ -31,8 +31,7 @@ public class IncomingMessageListenerThread implements Runnable {
 	}
 	
 	private void handleReceivedPacket(MazewarPacket packetFromClient) throws IOException {
-		// System.out.println(packetFromClient.eventType);
-		
+
 		if (packetFromClient.packetType == packetFromClient.REQUEST) {
 			// Update Lamport clock
 			synchronized(client) {
@@ -47,16 +46,20 @@ public class IncomingMessageListenerThread implements Runnable {
 			// Send acknowledgement
 			packetFromClient.packetType = MazewarPacket.ACK;
 			writeStream.writeObject(packetFromClient);
+			
 		} else if (packetFromClient.packetType == packetFromClient.ACK) {
+			
+			System.out.println("GOT ACK!!!");
 			synchronized(MazewarClient.ackMap) {
 				assert(MazewarClient.ackMap.containsKey(packetFromClient.packetId));
-				if (MazewarClient.ackMap.get(packetFromClient.packetId) > 0) {
-					int count = MazewarClient.ackMap.get(packetFromClient.packetId);
-					MazewarClient.ackMap.put(packetFromClient.packetId, --count);
+				int acks = MazewarClient.ackMap.get(packetFromClient.packetId);
+				if (acks > 0) {
+					MazewarClient.ackMap.put(packetFromClient.packetId, --acks);
 				}
 			}
 			
 			if(MazewarClient.ackMap.get(packetFromClient.packetId) == 0) {
+				System.out.println("RECEIVED ALL ACKS!!!");
 				client.releaseBroadcast(packetFromClient);
 				MazewarClient.ackMap.remove(packetFromClient.packetId);
 			}
