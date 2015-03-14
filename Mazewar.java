@@ -33,6 +33,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.Socket;
@@ -252,29 +254,27 @@ public class Mazewar extends JFrame {
 	        	
 				try {
 					Socket socket = new Socket(namingServiceHostname, namingServicePort);
-					BufferedReader readStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					BufferedWriter writeStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+					ObjectInputStream readStream = new ObjectInputStream(socket.getInputStream());
+					ObjectOutputStream writeStream = new ObjectOutputStream(socket.getOutputStream());
 					
 					// Send join message to the naming service
-					writeStream.write("join " + listenPort);
-					writeStream.newLine();
-					writeStream.flush();
 					
-					String[] response = readStream.readLine().split(" ");
-					client = new MazewarClient(Integer.parseInt(response[0]));
-					String[] peers = response[1]
-									.replace("[", "")
-									.replace("]", "")
-									.replace("/", "")
-									.split(",");
+					NamingServicePacket joinPacket = new NamingServicePacket("join", listenPort); 
+					writeStream.writeObject(joinPacket);
 					
-					for(String peer: peers) {
+					NamingServicePacket response;
+					response = (NamingServicePacket)readStream.readObject();
+					System.out.println(response);
+					for(String peer: response.connectedClients) {
 						if(!peer.isEmpty())
-						peerList.add(peer);
+						peerList.add(peer.replace("/", ""));
 					}
-					System.out.println(response[0]);
-					System.out.println(peerList);
+					
+					client = new MazewarClient(response.clientID);
 				} catch (IOException e) {
+					e.printStackTrace();
+					return;
+				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 					return;
 				}

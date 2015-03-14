@@ -106,6 +106,7 @@ public class MazewarClient {
 			System.out.println(peer);
 			Socket socket;
 			try {
+				System.out.println(connectionInfo[0] + " " + connectionInfo[1]);
 				socket = new Socket(connectionInfo[0], Integer.parseInt(connectionInfo[1]));
 				ObjectInputStream readStream = new ObjectInputStream(socket.getInputStream());
 				ObjectOutputStream writeStream = new ObjectOutputStream(socket.getOutputStream());

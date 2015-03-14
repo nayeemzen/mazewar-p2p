@@ -7,8 +7,8 @@ import java.io.*;
 public class NamingServiceClientHandler implements Runnable {
 	
 	private final Socket clientSocket;
-	private final BufferedReader readStream;
-	private final BufferedWriter writeStream;
+	private final ObjectInputStream readStream;
+	private final ObjectOutputStream writeStream;
 	private String clientName;
 	private ArrayList <String> connectedClients;
 	private boolean joined; 
@@ -19,55 +19,46 @@ public class NamingServiceClientHandler implements Runnable {
 		
 		clientName = null;
 		joined = false;
-		readStream = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		writeStream = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+		writeStream = new ObjectOutputStream(clientSocket.getOutputStream());
+		writeStream.flush();
+		readStream = new ObjectInputStream(clientSocket.getInputStream());
+		
 		
 		System.out.println("Created new thread to handle client connection");
 	}
 	
-	private void handleReceivedQuery(String queryFromClient) {
-		String[] tokens = queryFromClient.split(" ");
-		if (tokens.length < 1) {
-			return;
-		}
-		
-		switch (tokens[0]) {
-			case "join":
-				if (tokens.length > 1) {
-					handleJoin(tokens);
-				}
-				break;
-			case "quit":
-			default:
-				break;
+	private void handleReceivedQuery(NamingServicePacket queryFromClient) {
+		if ("join".equals(queryFromClient.packetType)) {
+			handleJoin(queryFromClient);
 		}
 	}
 	
-	private void handleJoin(String[] parameters) {
+	private void handleJoin(NamingServicePacket parameters) {
 		if (joined) return;
 		
 		try {
-			writeStream.write(NamingService.idCount.incrementAndGet() + " " + connectedClients.toString());
-			writeStream.newLine();
-			writeStream.flush();
+			NamingServicePacket packet = new NamingServicePacket(NamingService.idCount.incrementAndGet(), connectedClients);
+			writeStream.writeObject(packet);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		connectedClients.add(clientSocket.getInetAddress().toString() + "-" + parameters[1]);
+		connectedClients.add(clientSocket.getInetAddress().toString() + "-" + parameters.port);
 		joined = true;
 	}
 
 	@Override
 	public void run() {
 		try {
-			String queryFromClient;
-			while ((queryFromClient = readStream.readLine()) != null) {
+			NamingServicePacket queryFromClient;
+			while ((queryFromClient = (NamingServicePacket)readStream.readObject()) != null) {
 				System.out.println(queryFromClient);
 				handleReceivedQuery(queryFromClient);
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		finally {

@@ -31,6 +31,7 @@ public class IncomingMessageListenerThread implements Runnable {
 	}
 	
 	private void handleReceivedPacket(MazewarPacket packetFromClient) throws IOException {
+		System.out.println(packetFromClient.eventType);
 		
 		if (packetFromClient.packetType == packetFromClient.REQUEST) {
 			// Update Lamport clock
