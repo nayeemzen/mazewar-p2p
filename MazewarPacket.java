@@ -10,7 +10,7 @@ public class MazewarPacket implements Serializable {
 		eventType = packet.eventType;
 		errorCode = packet.errorCode;
 		packetType = packet.packetType;
-		md5 = packet.md5;
+		packetId = packet.packetId;
 		clientName = packet.clientName;
 		clientId = packet.clientId;
 		score = packet.score;	
@@ -48,7 +48,7 @@ public class MazewarPacket implements Serializable {
 	public int eventType;
 	public int errorCode;
 	public int packetType;
-	public String md5;
+	public String packetId;
 	public String clientName;
 	
 	/* Client information variables */

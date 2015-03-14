@@ -40,7 +40,7 @@ public class IncomingMessageListenerThread implements Runnable {
 				packetFromClient.timestamp = MazewarClient.lamportClock.get();
 			}
 			
-			MazewarClient.waitlist.add(packetFromClient.md5);
+			MazewarClient.waitlist.add(packetFromClient.packetId);
 			MazewarClient.eventQueue.add(packetFromClient);
 			
 			// Send acknowledgement
@@ -48,19 +48,19 @@ public class IncomingMessageListenerThread implements Runnable {
 			writeStream.writeObject(packetFromClient);
 		} else if (packetFromClient.packetType == packetFromClient.ACK) {
 			synchronized(MazewarClient.ackMap) {
-				assert(MazewarClient.ackMap.containsKey(packetFromClient.md5));
-				if (MazewarClient.ackMap.get(packetFromClient.md5) > 0) {
-					int count = MazewarClient.ackMap.get(packetFromClient.md5);
-					MazewarClient.ackMap.put(packetFromClient.md5, --count);
+				assert(MazewarClient.ackMap.containsKey(packetFromClient.packetId));
+				if (MazewarClient.ackMap.get(packetFromClient.packetId) > 0) {
+					int count = MazewarClient.ackMap.get(packetFromClient.packetId);
+					MazewarClient.ackMap.put(packetFromClient.packetId, --count);
 				}
 			}
 			
-			if(MazewarClient.ackMap.get(packetFromClient.md5) == 0) {
+			if(MazewarClient.ackMap.get(packetFromClient.packetId) == 0) {
 				client.releaseBroadcast(packetFromClient);
 			}
 			
 		} else if (packetFromClient.packetType == packetFromClient.RELEASE) {
-			MazewarClient.waitlist.remove(packetFromClient.md5);
+			MazewarClient.waitlist.remove(packetFromClient.packetId);
 		}
 		
 	}

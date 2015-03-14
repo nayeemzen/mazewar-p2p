@@ -9,7 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.security.*;
+import java.util.UUID;
 
 public class MazewarClient {
 	
@@ -41,7 +41,6 @@ public class MazewarClient {
 
 	public boolean sendEvent(LocalClient client, ClientEvent clientevent) {
 		MazewarPacket payload = new MazewarPacket();
-		// payload.clientName = client.getName();
 		
 		if (clientevent.equals(ClientEvent.moveForward)) {
 			payload.eventType = MazewarPacket.ACTION_MOVE_UP;
@@ -67,9 +66,10 @@ public class MazewarClient {
 	}
 	
 	public void requestBroadcast(MazewarPacket payload) {
+		payload.packetId = UUID.randomUUID().toString();
 		payload.timestamp = lamportClock.incrementAndGet();
 		int acksExpected = broadcast(payload);
-		ackMap.put(payload.md5, acksExpected);
+		ackMap.put(payload.packetId, acksExpected);
 	}
 	
 	public void releaseBroadcast(MazewarPacket payload) {
