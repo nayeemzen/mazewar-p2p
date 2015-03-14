@@ -166,6 +166,7 @@ public class Mazewar extends JFrame {
                 	initializeClient(name);
                 	client.clientName = name;
                     client.addMaze(maze); // Add maze to MazewarClient
+                    client.addGUIClient(guiClient);
                 	client.start(peerList, listenPort);
                     maze.addClient(guiClient, client.clientId);
                     this.addKeyListener(guiClient);

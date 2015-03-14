@@ -20,6 +20,7 @@ public class MazewarClient {
 	public String clientName;
 	public ConcurrentHashMap <String, ObjectOutputStream> peerList;
 	private MazeImpl maze;
+	private GUIClient localClient;
 	public static PriorityBlockingQueue<MazewarPacket> eventQueue;
 	public static ConcurrentHashMap <String, Integer> ackMap;
 	public static Set<String> waitlist;
@@ -45,6 +46,10 @@ public class MazewarClient {
 	
 	public void addMaze(Maze maze) {
 		this.maze = (MazeImpl)maze;
+	}
+	
+	public void addGUIClient(GUIClient client) {
+		this.localClient = client;
 	}
 
 	public boolean sendEvent(LocalClient client, ClientEvent clientevent) {
@@ -144,7 +149,7 @@ public class MazewarClient {
 		connectToPeers(peerList);
 		try {
 			(new Thread (new MazewarServer(this, port))).start();
-			(new Thread (new EventQueueListener(maze))).start();
+			(new Thread (new EventQueueListener(maze, localClient))).start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

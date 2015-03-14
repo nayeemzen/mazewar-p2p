@@ -1,12 +1,16 @@
-import java.util.PriorityQueue;
+import java.util.HashMap;
 
 
 public class EventQueueListener implements Runnable {
 	
-	Maze maze;
+	private Maze maze;
+	private GUIClient localClient;
+	private HashMap<Integer, RemoteClient> remoteClients;
 	
-	public EventQueueListener(Maze maze) {
+	public EventQueueListener(Maze maze, GUIClient localClient) {
 		this.maze = maze;
+		this.localClient = localClient;
+		remoteClients = new HashMap<Integer, RemoteClient>();
 	}
 
 	public void run() {
@@ -20,17 +24,79 @@ public class EventQueueListener implements Runnable {
 	}
 
 	private void renderEvent(MazewarPacket packet) {
+		System.out.println("DEQUEUED EVENT: " + packet.eventType + " FROM: " + packet.clientName);
+		if(packet.eventType == MazewarPacket.REGISTER) {
+			registerClient(packet.clientName, packet.clientId);
+			return;
+		}
+			
+		RemoteClient remoteClient = null;
+		boolean isLocalClient = packet.clientName == localClient.getName();
+		
+		if(!isLocalClient){
+			remoteClient = remoteClients.get(packet.clientId);
+			if(remoteClient == null) return;
+		}
+
+		
 		// Render to view engine
 		switch(packet.eventType) {
-		case MazewarPacket.REGISTER:
-			registerClient(packet.clientName, packet.clientId);
+		case MazewarPacket.ACTION_MOVE_DOWN:
+			if(isLocalClient)
+				localClient.backup();
+			else
+				remoteClient.backup();
+			break;
+		case MazewarPacket.ACTION_MOVE_UP:
+			if(isLocalClient)
+				localClient.forward();
+			else
+				remoteClient.forward();
+			break;
+		case MazewarPacket.ACTION_TURN_LEFT:
+			if(isLocalClient)
+				localClient.turnLeft();
+			else
+				remoteClient.turnLeft();
+			break;
+		case MazewarPacket.ACTION_TURN_RIGHT:
+			if(isLocalClient)
+				localClient.turnRight();
+			else
+				remoteClient.turnRight();
+			break;
+		case MazewarPacket.ACTION_FIRE_PROJECTILE:
+			if(isLocalClient) {
+				System.out.println(localClient.getName() + "fired");
+				localClient.fire();
+			}
+			else {
+				System.out.println(localClient.getName() + "fired");
+				remoteClient.fire();
+			}
+			break;
+//		case MazewarPacket.ACTION_MISSILE_TICK:
+//			maze.missileTick();
+//			break;
+//		case MazewarPacket.QUIT:
+//			assert(isLocalClient == false);
+//			maze.removeClient(remoteClient);
+//			connectedRemoteClients.remove(remoteClient.getName());
+//			if (connectedRemoteClients.size() == 0) {
+//				// No one else is playing anymore, quit the game.
+//				Mazewar.quit();
+//			}
+//			break;
+		default:
+			System.err.println("Undefined event!");
 		}
 		
 	}
-
+	
 	private void registerClient(String clientName, int clientId) {
 		RemoteClient client = new RemoteClient(clientName);
 		maze.addClient(client, clientId);
+		remoteClients.put(clientId, client);
 	}
 
 }
