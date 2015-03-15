@@ -36,6 +36,7 @@ public class ClientEvent {
         private static final int FIRE = 4;
         private static final int REGISTER = 5;
         private static final int QUIT = 6;
+        private static final int MISSILE_TICK = 7;
         
         /**
          * Default to 0, to be invalid.
@@ -83,6 +84,8 @@ public class ClientEvent {
         public static final ClientEvent register = new ClientEvent(REGISTER);
         
         public static final ClientEvent quit = new ClientEvent(QUIT);
+        
+        public static final ClientEvent missileTick = new ClientEvent(MISSILE_TICK);
         
         
 }

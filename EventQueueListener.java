@@ -29,6 +29,12 @@ public class EventQueueListener implements Runnable {
 			registerClient(packet.clientName, packet.clientId);
 			return;
 		}
+		
+		if (packet.eventType == MazewarPacket.ACTION_MISSILE_TICK) {
+			MazeImpl maze = (MazeImpl)this.maze;
+			maze.missileTick();
+			return;
+		}
 			
 		RemoteClient remoteClient = null;
 		boolean isLocalClient = packet.clientName == localClient.getName();
@@ -75,9 +81,6 @@ public class EventQueueListener implements Runnable {
 				remoteClient.fire();
 			}
 			break;
-//		case MazewarPacket.ACTION_MISSILE_TICK:
-//			maze.missileTick();
-//			break;
 //		case MazewarPacket.QUIT:
 //			assert(isLocalClient == false);
 //			maze.removeClient(remoteClient);

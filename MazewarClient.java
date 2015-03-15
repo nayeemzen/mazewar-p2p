@@ -25,6 +25,7 @@ public class MazewarClient {
 	public static ConcurrentHashMap <String, Integer> ackMap;
 	public static Set<String> waitlist;
 	public static AtomicInteger lamportClock;
+	public static boolean playing = true;
 	
 	MazewarClient(int clientId) {
 		socket = null;
@@ -52,7 +53,7 @@ public class MazewarClient {
 		this.localClient = client;
 	}
 
-	public boolean sendEvent(LocalClient client, ClientEvent clientevent) {
+	public boolean sendEvent(ClientEvent clientevent) {
 		MazewarPacket payload = new MazewarPacket();
 		
 		if (clientevent.equals(ClientEvent.moveForward)) {
@@ -69,12 +70,14 @@ public class MazewarClient {
 			payload.eventType = MazewarPacket.REGISTER;
 		} else if (clientevent.equals(ClientEvent.quit)) {
 			payload.eventType = MazewarPacket.QUIT;
-		} else {	
+		} else if (clientevent.equals(ClientEvent.missileTick)){
+			payload.eventType = MazewarPacket.ACTION_MISSILE_TICK;
+		} else {
 			return false;
 		}
 		
 		requestBroadcast(payload);
-		if(!clientevent.equals(ClientEvent.register))
+		if(!clientevent.equals(ClientEvent.register) && MazewarClient.playing == true)
 			eventQueue.add(payload);
 		return true;
 	}
@@ -86,7 +89,8 @@ public class MazewarClient {
 		payload.packetId = UUID.randomUUID().toString();
 		payload.timestamp = lamportClock.incrementAndGet();
 		int acksExpected = broadcast(payload);
-		ackMap.put(payload.packetId, acksExpected);
+		if (acksExpected > 0)
+			ackMap.put(payload.packetId, acksExpected);
 	}
 	
 	public void releaseBroadcast(MazewarPacket payload) {
@@ -144,6 +148,10 @@ public class MazewarClient {
 				e.printStackTrace();
 			}	
 		}
+		
+		if (peerList.size() == 3) {
+			MazewarClient.playing = true;
+		}
 	}
 	
 	public void start(ArrayList <String> peerList, int port) {
@@ -151,6 +159,9 @@ public class MazewarClient {
 		try {
 			(new Thread (new MazewarServer(this, port))).start();
 			(new Thread (new EventQueueListener(maze, localClient))).start();
+			if (this.clientId == 1) {
+				new Thread (new MissileTick(this)).start();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

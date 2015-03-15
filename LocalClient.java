@@ -45,7 +45,7 @@ public abstract class LocalClient extends Client {
 			assert(client != null);
 			assert(this.client == null);
 			this.client = client;
-			client.sendEvent(this, ClientEvent.register);
+			client.sendEvent(ClientEvent.register);
 		}
 
 

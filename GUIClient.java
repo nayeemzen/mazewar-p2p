@@ -43,23 +43,23 @@ public class GUIClient extends LocalClient implements KeyListener {
         public void keyPressed(KeyEvent e) {
             // If the user pressed Q, invoke the cleanup code and quit. 
             if((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
-            		client.sendEvent(this, ClientEvent.quit);
+            		client.sendEvent(ClientEvent.quit);
                     Mazewar.quit();
             // Up-arrow moves forward.
             } else if(e.getKeyCode() == KeyEvent.VK_UP) {
-            	client.sendEvent(this, ClientEvent.moveForward);
+            	client.sendEvent(ClientEvent.moveForward);
             // Down-arrow moves backward.
             } else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
-            	client.sendEvent(this, ClientEvent.moveBackward);
+            	client.sendEvent(ClientEvent.moveBackward);
             // Left-arrow turns left.
             } else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-            	client.sendEvent(this, ClientEvent.turnLeft);
+            	client.sendEvent(ClientEvent.turnLeft);
             // Right-arrow turns right.
             } else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            	client.sendEvent(this, ClientEvent.turnRight);
+            	client.sendEvent(ClientEvent.turnRight);
             // Spacebar fires.
             } else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-            	client.sendEvent(this, ClientEvent.fire);
+            	client.sendEvent(ClientEvent.fire);
             }
         }
         
