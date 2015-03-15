@@ -479,10 +479,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                         point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
                         cell = getCellImpl(point);
                 }
-                Direction d = Direction.random();
-                while(cell.isWall(d)) {
-                        d = Direction.random();
-                }
+                Direction d = Direction.East;
                 cell.setContents(target);
                 clientMap.put(target, new DirectedPoint(point, d));
                 update();

@@ -24,7 +24,7 @@ public class EventQueueListener implements Runnable {
 	}
 
 	private void renderEvent(MazewarPacket packet) {
-		System.out.println("DEQUEUED EVENT: " + packet.eventType + " FROM: " + packet.clientName);
+		//System.out.println("DEQUEUED EVENT: " + packet.eventType + " FROM: " + packet.clientName);
 		if(packet.eventType == MazewarPacket.REGISTER) {
 			registerClient(packet.clientName, packet.clientId);
 			return;

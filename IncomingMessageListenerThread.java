@@ -48,24 +48,27 @@ public class IncomingMessageListenerThread implements Runnable {
 			writeStream.writeObject(packetFromClient);
 			
 		} else if (packetFromClient.packetType == packetFromClient.ACK) {
-			
-			System.out.println("GOT ACK!!!");
+			//System.out.println("GOT ACK!!!");
 			synchronized(MazewarClient.ackMap) {
-				assert(MazewarClient.ackMap.containsKey(packetFromClient.packetId));
+				if(MazewarClient.ackMap.containsKey(packetFromClient.packetId) == false) {
+					System.out.println("orphan ACK!");
+					return;
+				}
+				
 				int acks = MazewarClient.ackMap.get(packetFromClient.packetId);
 				if (acks > 0) {
 					MazewarClient.ackMap.put(packetFromClient.packetId, --acks);
 				}
-			}
-			
-			if(MazewarClient.ackMap.get(packetFromClient.packetId) == 0) {
-				System.out.println("RECEIVED ALL ACKS!!!");
-				client.releaseBroadcast(packetFromClient);
-				MazewarClient.ackMap.remove(packetFromClient.packetId);
+				
+				if(MazewarClient.ackMap.get(packetFromClient.packetId) == 0) {
+					//System.out.println("RECEIVED ALL ACKS!!!");
+					client.releaseBroadcast(packetFromClient);
+					MazewarClient.ackMap.remove(packetFromClient.packetId);
+				}
 			}
 			
 		} else if (packetFromClient.packetType == packetFromClient.RELEASE) {
-			System.out.println("GOT RELEASE!!!");
+			//System.out.println("GOT RELEASE!!!");
 			MazewarClient.waitlist.remove(packetFromClient.packetId);
 		}
 		

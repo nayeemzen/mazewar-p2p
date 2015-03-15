@@ -25,7 +25,7 @@ public class MazewarClient {
 	public static ConcurrentHashMap <String, Integer> ackMap;
 	public static Set<String> waitlist;
 	public static AtomicInteger lamportClock;
-	public static boolean playing = true;
+	public static boolean playing = false;
 	
 	MazewarClient(int clientId) {
 		socket = null;
@@ -54,6 +54,10 @@ public class MazewarClient {
 	}
 
 	public boolean sendEvent(ClientEvent clientevent) {
+		if (!MazewarClient.playing == true && !clientevent.equals(ClientEvent.register)) {
+			return false;
+		}
+		
 		MazewarPacket payload = new MazewarPacket();
 		
 		if (clientevent.equals(ClientEvent.moveForward)) {
@@ -77,7 +81,7 @@ public class MazewarClient {
 		}
 		
 		requestBroadcast(payload);
-		if(!clientevent.equals(ClientEvent.register) && MazewarClient.playing == true)
+		if(!clientevent.equals(ClientEvent.register))
 			eventQueue.add(payload);
 		return true;
 	}
@@ -88,9 +92,11 @@ public class MazewarClient {
 		payload.packetType = MazewarPacket.REQUEST;
 		payload.packetId = UUID.randomUUID().toString();
 		payload.timestamp = lamportClock.incrementAndGet();
-		int acksExpected = broadcast(payload);
-		if (acksExpected > 0)
-			ackMap.put(payload.packetId, acksExpected);
+		synchronized(MazewarClient.ackMap) {
+			int acksExpected = broadcast(payload);
+			if (acksExpected > 0)
+				ackMap.put(payload.packetId, acksExpected);
+		}
 	}
 	
 	public void releaseBroadcast(MazewarPacket payload) {
