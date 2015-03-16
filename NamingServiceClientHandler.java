@@ -10,6 +10,7 @@ public class NamingServiceClientHandler implements Runnable {
 	private final ObjectInputStream readStream;
 	private final ObjectOutputStream writeStream;
 	private String clientName;
+	private String clientInfo;
 	private ArrayList <String> connectedClients;
 	private boolean joined; 
 	
@@ -46,6 +47,8 @@ public class NamingServiceClientHandler implements Runnable {
 		}
 		
 		String clientInfo = clientSocket.getInetAddress().toString() + "-" + parameters.port + "-" + parameters.clientName + "-" + clientId;
+		this.clientName = parameters.clientName;
+		this.clientInfo = clientInfo;
 		connectedClients.add(clientInfo);
 		joined = true;
 	}
@@ -59,7 +62,14 @@ public class NamingServiceClientHandler implements Runnable {
 				handleReceivedQuery(queryFromClient);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			if (this.clientInfo != null) {
+				synchronized (connectedClients) {
+					connectedClients.remove(this.clientInfo);
+				}
+				System.out.println("Client " + this.clientName + " is gone.");
+			} else {
+				e.printStackTrace();
+			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
