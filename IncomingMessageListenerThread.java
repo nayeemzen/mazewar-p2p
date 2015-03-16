@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Enumeration;
+import java.util.concurrent.ConcurrentHashMap;
 import java.lang.Math;
 
 public class IncomingMessageListenerThread implements Runnable {
@@ -33,6 +35,11 @@ public class IncomingMessageListenerThread implements Runnable {
 	private void handleReceivedPacket(MazewarPacket packetFromClient) throws IOException {
 
 		if (packetFromClient.packetType == packetFromClient.REQUEST) {
+			if (packetFromClient.eventType == MazewarPacket.QUIT) {
+				System.out.println("PLAYER QUITTING, STOP PLAYING.");
+				MazewarClient.playing = false;
+			}
+			
 			// Update Lamport clock
 			synchronized(client) {
 				int lamportTimestamp = 1 + Math.max(packetFromClient.timestamp, MazewarClient.lamportClock.get());
@@ -64,12 +71,35 @@ public class IncomingMessageListenerThread implements Runnable {
 					//System.out.println("RECEIVED ALL ACKS!!!");
 					client.releaseBroadcast(packetFromClient);
 					MazewarClient.ackMap.remove(packetFromClient.packetId);
+					if (packetFromClient.eventType == MazewarPacket.QUIT) {
+						Mazewar.quit();
+					}
 				}
 			}
 			
 		} else if (packetFromClient.packetType == packetFromClient.RELEASE) {
 			//System.out.println("GOT RELEASE!!!");
 			MazewarClient.waitlist.remove(packetFromClient.packetId);
+			if (packetFromClient.eventType == MazewarPacket.QUIT) {
+				System.out.println("PLAYER QUIT, START PLAYING.");
+				synchronized(client.peerList) {
+					ConcurrentHashMap <String, ObjectOutputStream> peerList = client.peerList;
+					Enumeration<String> peers = peerList.keys();
+					String peer;
+					while (peers.hasMoreElements()) {
+						peer = peers.nextElement();
+						if (peerList.get(peer) == writeStream) {
+							peerList.remove(peer);
+						}
+					}
+					
+					if (peerList.size() == 0) {
+						Mazewar.quit();
+					}
+				}
+				
+				MazewarClient.playing = true;
+			}
 		}
 		
 	}

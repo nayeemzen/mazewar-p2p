@@ -81,15 +81,10 @@ public class EventQueueListener implements Runnable {
 				remoteClient.fire();
 			}
 			break;
-//		case MazewarPacket.QUIT:
-//			assert(isLocalClient == false);
-//			maze.removeClient(remoteClient);
-//			connectedRemoteClients.remove(remoteClient.getName());
-//			if (connectedRemoteClients.size() == 0) {
-//				// No one else is playing anymore, quit the game.
-//				Mazewar.quit();
-//			}
-//			break;
+		case MazewarPacket.QUIT:
+			assert(isLocalClient == false);
+			maze.removeClient(remoteClient);
+			break;
 		default:
 			System.err.println("Undefined event!");
 		}

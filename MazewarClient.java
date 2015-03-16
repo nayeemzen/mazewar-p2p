@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -108,12 +109,18 @@ public class MazewarClient {
 	private int broadcast(MazewarPacket payload) {
 		assert peerList != null;
 		int acksExpected = 0;
-		for(ObjectOutputStream writeStream : peerList.values()) {
+		ObjectOutputStream writeStream;
+		Enumeration<String> peers = peerList.keys();
+		String peer;
+		while (peers.hasMoreElements()) {
+			peer = peers.nextElement();
+			writeStream = peerList.get(peer);
 			synchronized(writeStream) {
 				try {
 					writeStream.writeObject(payload);
 					acksExpected++;
 				} catch (IOException e) {
+					peerList.remove(peer);
 					e.printStackTrace();
 				}
 			}
