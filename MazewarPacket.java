@@ -37,6 +37,9 @@ public class MazewarPacket implements Serializable {
 	public static final int REQUEST = 400;
 	public static final int ACK = 401;
 	public static final int RELEASE = 402;
+	public static final int TICK_ELECTION = 403;
+	public static final int TICK_OK = 404;
+	public static final int TICK_COORDINATOR = 405;
 
 	
 	/* Error codes */

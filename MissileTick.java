@@ -8,12 +8,26 @@ public class MissileTick implements Runnable {
 	
 	public void run() {
 		while (true) {
-			client.sendEvent(ClientEvent.missileTick);
 			try {
 				Thread.sleep(200);
 	        } catch(Exception e) {
 	            // shouldn't happen
 	        }
+			
+			if (client.inElectionSince != 0 && System.nanoTime() - client.inElectionSince > 200 * 1000000) {
+				client.inElectionSince = 0;
+				client.isCoordinator = true;
+			}
+			
+			if (client.isCoordinator) {
+				client.sendEvent(ClientEvent.missileTick);
+			} else if (MazewarClient.playing) {
+				client.noTick();
+				if (client.lastTick >= 800) {
+					client.broadcastElection();
+				}
+			}
+			
 		}
 	}
 }
