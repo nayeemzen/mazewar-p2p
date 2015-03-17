@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +21,7 @@ public class MazewarClient {
 	public int clientId;
 	public String clientName;
 	public ConcurrentHashMap <String, ObjectOutputStream> peerList;
+	public ConcurrentHashMap <Integer, ObjectOutputStream> clientIdToWriteStream;
 	private MazeImpl maze;
 	private GUIClient localClient;
 	public static PriorityBlockingQueue<MazewarPacket> eventQueue;
@@ -27,6 +29,12 @@ public class MazewarClient {
 	public static Set<String> waitlist;
 	public static AtomicInteger lamportClock;
 	public static boolean playing = false;
+	
+	
+	public boolean isCoordinator;
+	public long inElectionSince;
+	public int lastTick;
+	public int lastElection;
 	
 	MazewarClient(int clientId) {
 		socket = null;
@@ -36,6 +44,7 @@ public class MazewarClient {
 		lamportClock = new AtomicInteger(0);
 		ackMap = new ConcurrentHashMap <String, Integer>();
 		waitlist = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+		clientIdToWriteStream = new ConcurrentHashMap <Integer, ObjectOutputStream>();
 		
 		eventQueue = new PriorityBlockingQueue<MazewarPacket>(10, new Comparator <MazewarPacket> () {
 			public int compare(MazewarPacket o1, MazewarPacket o2) {	
@@ -44,6 +53,8 @@ public class MazewarClient {
 			}
 		});
 		
+		isCoordinator = clientId == 1 ? true : false;	
+		inElectionSince = 0;
 	}
 	
 	public void addMaze(Maze maze) {
@@ -104,6 +115,24 @@ public class MazewarClient {
 		MazewarPacket packet = new MazewarPacket(payload);
 		packet.packetType = MazewarPacket.RELEASE;
 		broadcast(packet);
+	}
+	
+	public void broadcastElection() {
+		inElectionSince = System.nanoTime();
+		MazewarPacket payload = new MazewarPacket();
+		payload.clientId = clientId;
+		payload.packetType = MazewarPacket.TICK_ELECTION;
+		
+		Set<Entry<Integer, ObjectOutputStream>> peers = clientIdToWriteStream.entrySet();
+		for (Entry<Integer, ObjectOutputStream> peer : peers) {
+			if (peer.getKey() > clientId) {
+				try {
+					peer.getValue().writeObject(payload);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	private int broadcast(MazewarPacket payload) {
@@ -172,11 +201,18 @@ public class MazewarClient {
 		try {
 			(new Thread (new MazewarServer(this, port))).start();
 			(new Thread (new EventQueueListener(maze, localClient))).start();
-			if (this.clientId == 1) {
-				new Thread (new MissileTick(this)).start();
-			}
+			(new Thread (new MissileTick(this))).start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	public synchronized void tick() {
+		lastTick = 0;
+	}
+	
+	public synchronized void noTick() {
+		lastTick = lastTick + 200;
 	}
 }

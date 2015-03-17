@@ -35,9 +35,13 @@ public class IncomingMessageListenerThread implements Runnable {
 	private void handleReceivedPacket(MazewarPacket packetFromClient) throws IOException {
 
 		if (packetFromClient.packetType == packetFromClient.REQUEST) {
-			if (packetFromClient.eventType == MazewarPacket.QUIT) {
+			if (packetFromClient.eventType == MazewarPacket.REGISTER) {
+				client.clientIdToWriteStream.put(packetFromClient.clientId, this.writeStream);
+			} else if (packetFromClient.eventType == MazewarPacket.QUIT) {
 				System.out.println("PLAYER QUITTING, STOP PLAYING.");
 				MazewarClient.playing = false;
+			} else if (packetFromClient.eventType == MazewarPacket.ACTION_MISSILE_TICK) {
+				client.tick();
 			}
 			
 			// Update Lamport clock
@@ -98,8 +102,18 @@ public class IncomingMessageListenerThread implements Runnable {
 					}
 				}
 				
+				client.clientIdToWriteStream.remove(packetFromClient.clientId);
+				
 				MazewarClient.playing = true;
 			}
+		} else if (packetFromClient.packetType == packetFromClient.TICK_ELECTION) {
+			System.out.println("TICK ELECTION STARTED.");
+			packetFromClient.packetType = MazewarPacket.TICK_OK;
+			writeStream.writeObject(packetFromClient);
+		} else if (packetFromClient.packetType == packetFromClient.TICK_OK || packetFromClient.packetType == packetFromClient.TICK_COORDINATOR) {
+			// TODO stop election process
+			System.out.println("TICK ELECTION DONE.");
+			client.inElectionSince = 0;
 		}
 		
 	}
