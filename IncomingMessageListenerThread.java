@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.lang.Math;
@@ -20,7 +19,7 @@ public class IncomingMessageListenerThread implements Runnable {
 	
 	public void run() {
 		try {
-			MazewarPacket packetFromClient = new MazewarPacket();
+			MazewarPacket packetFromClient;
 			while ((packetFromClient = (MazewarPacket) readStream.readObject()) != null) {
 				handleReceivedPacket(packetFromClient);
 			}
@@ -33,7 +32,6 @@ public class IncomingMessageListenerThread implements Runnable {
 	}
 	
 	private void handleReceivedPacket(MazewarPacket packetFromClient) throws IOException {
-
 		if (packetFromClient.packetType == packetFromClient.REQUEST) {
 			if (packetFromClient.eventType == MazewarPacket.QUIT) {
 				System.out.println("PLAYER QUITTING, STOP PLAYING.");
@@ -52,8 +50,10 @@ public class IncomingMessageListenerThread implements Runnable {
 			
 			// Send acknowledgement
 			packetFromClient.packetType = MazewarPacket.ACK;
-			writeStream.writeObject(packetFromClient);
 			
+			synchronized(writeStream) {
+				writeStream.writeObject(packetFromClient);
+			}
 		} else if (packetFromClient.packetType == packetFromClient.ACK) {
 			//System.out.println("GOT ACK!!!");
 			synchronized(MazewarClient.ackMap) {
