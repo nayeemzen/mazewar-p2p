@@ -95,10 +95,6 @@ public class IncomingMessageListenerThread implements Runnable {
 							peerList.remove(peer);
 						}
 					}
-					
-					if (peerList.size() == 0) {
-						Mazewar.quit();
-					}
 				}
 				
 				client.clientIdToWriteStream.remove(packetFromClient.clientId);
