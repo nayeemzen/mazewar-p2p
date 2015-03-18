@@ -129,7 +129,7 @@ public class MazewarClient {
 		
 		Set<Entry<Integer, ObjectOutputStream>> peers = clientIdToWriteStream.entrySet();
 		for (Entry<Integer, ObjectOutputStream> peer : peers) {
-			if (peer.getKey() > clientId) {
+			if (peer.getKey() < clientId) {
 				try {
 					peer.getValue().writeObject(payload);
 				} catch (IOException e) {
