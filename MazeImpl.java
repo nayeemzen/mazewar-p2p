@@ -476,6 +476,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         private synchronized void killClient(Client source, Client target) {
                 assert(source != null);
                 assert(target != null);
+                Random randomGenKill = new Random(67);
                 Mazewar.consolePrintLn(source.getName() + " just vaporized " + 
                                 target.getName());
                 Object o = clientMap.remove(target);
@@ -484,11 +485,11 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 CellImpl cell = getCellImpl(point);
                 cell.setContents(null);
                 // Pick a random starting point, and check to see if it is already occupied
-                point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
+                point = new Point(randomGenKill.nextInt(maxX),randomGenKill.nextInt(maxY));
                 cell = getCellImpl(point);
                 // Repeat until we find an empty cell
                 while(cell.getContents() != null) {
-                        point = new Point(randomGen.nextInt(maxX),randomGen.nextInt(maxY));
+                        point = new Point(randomGenKill.nextInt(maxX),randomGenKill.nextInt(maxY));
                         cell = getCellImpl(point);
                 }
                 Direction d = Direction.East;
