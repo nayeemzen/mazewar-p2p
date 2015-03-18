@@ -67,6 +67,9 @@ public class MazewarClient {
 
 	public boolean sendEvent(ClientEvent clientevent) {
 		//System.out.println(clientevent.equals(ClientEvent.missileTick));
+		if (clientevent.equals(ClientEvent.quit) && peerList.size() == 0) {
+			Mazewar.quit();
+		}
 		MazewarPacket payload = new MazewarPacket();
 		
 		if (clientevent.equals(ClientEvent.moveForward)) {
@@ -129,7 +132,7 @@ public class MazewarClient {
 		
 		Set<Entry<Integer, ObjectOutputStream>> peers = clientIdToWriteStream.entrySet();
 		for (Entry<Integer, ObjectOutputStream> peer : peers) {
-			if (peer.getKey() > clientId) {
+			if (peer.getKey() < clientId) {
 				try {
 					peer.getValue().writeObject(payload);
 				} catch (IOException e) {
