@@ -60,4 +60,5 @@ public class MazewarPacket implements Serializable {
 	public int coords_x;
 	public int coords_y;
 	public String orientation;
+	public int deaths;
 }

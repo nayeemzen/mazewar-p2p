@@ -96,7 +96,9 @@ public abstract class Client {
                 listenerSet.remove(cl);
         }
         
-        /* Internals ******************************************************/        
+        /* Internals ******************************************************/
+        
+        public int deaths = 0;
         
         /**
          * The maze where the client is located.  <code>null</code> if not

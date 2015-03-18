@@ -99,6 +99,7 @@ public class MazewarClient {
 			payload.orientation = localClient.getOrientation().toString();
 			payload.coords_x = localClient.getPoint().getX();
 			payload.coords_y = localClient.getPoint().getY();
+			payload.deaths = localClient.deaths;
 		}
 		
 		broadcastRequest(payload);

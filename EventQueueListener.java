@@ -99,6 +99,7 @@ public class EventQueueListener implements Runnable {
 		if(remoteClients.containsKey(packet.clientId)) return;
 		
 		RemoteClient client = new RemoteClient(packet.clientName);
+		client.deaths = packet.deaths;
 		Direction d = getOrientation(packet.orientation);
 		Point coords = new Point(packet.coords_x, packet.coords_y);
 		
