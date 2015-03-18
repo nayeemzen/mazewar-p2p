@@ -55,6 +55,7 @@ public class Mazewar extends JFrame {
 		private static int listenPort;
 		private static MazewarClient client;
 		private ArrayList<String> peerList = new ArrayList<String>();
+		private Socket namingServiceSocket;
 
         /**
          * The default width of the {@link Maze}.
@@ -244,9 +245,9 @@ public class Mazewar extends JFrame {
         
         private void initializeClient(String name) {
         	try {
-				Socket socket = new Socket(namingServiceHostname, namingServicePort);
-				ObjectInputStream readStream = new ObjectInputStream(socket.getInputStream());
-				ObjectOutputStream writeStream = new ObjectOutputStream(socket.getOutputStream());
+				namingServiceSocket = new Socket(namingServiceHostname, namingServicePort);
+				ObjectInputStream readStream = new ObjectInputStream(namingServiceSocket.getInputStream());
+				ObjectOutputStream writeStream = new ObjectOutputStream(namingServiceSocket.getOutputStream());
 				
 				// Send join message to the naming service
 				

@@ -256,8 +256,8 @@ public class ScoreTableModel implements TableModel, MazeListener {
               assert(o instanceof ScoreWrapper);
               scoreSet.remove(o);
               ScoreWrapper s = (ScoreWrapper)o;
-              s.setScore(score);
               scoreSet.add(s);
+              s.setScore(score);
               notifyListeners();
 		}
 }
