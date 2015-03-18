@@ -77,6 +77,10 @@ public class ScoreTableModel implements TableModel, MazeListener {
                         score = score + mod;
                 }
                 
+                public void setScore(int score) {
+                	this.score = score;
+                }
+                
                 public int compareTo(Object o) {
                         assert(o instanceof ScoreWrapper);
                         ScoreWrapper s = (ScoreWrapper)o;
@@ -244,4 +248,16 @@ public class ScoreTableModel implements TableModel, MazeListener {
                         tml.tableChanged(new TableModelEvent(this));
                 } 
         }
+
+		public void setScore(Client client, int score) {
+			  assert(client != null);
+			  System.out.println("RECEIVED score:: " + score);
+              Object o = clientMap.get(client);
+              assert(o instanceof ScoreWrapper);
+              scoreSet.remove(o);
+              ScoreWrapper s = (ScoreWrapper)o;
+              s.setScore(score);
+              scoreSet.add(s);
+              notifyListeners();
+		}
 }

@@ -55,7 +55,6 @@ public class MazewarPacket implements Serializable {
 	
 	/* Client information variables */
 	public String clientName;
-	public boolean coords_available;
 	public int clientId;
 	public int score;
 	public int coords_x;

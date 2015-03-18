@@ -34,6 +34,7 @@ public class MazewarClient {
 	public long inElectionSince;
 	public int lastTick;
 	public int lastElection;
+	public static ScoreTableModel scoreTable;
 	
 	MazewarClient(int clientId) {
 		socket = null;
@@ -91,8 +92,8 @@ public class MazewarClient {
 		if(!clientevent.equals(ClientEvent.register))
 			eventQueue.add(payload);
 		else {
+			payload.score = getCurrentScore();
 			payload.orientation = localClient.getOrientation().toString();
-			payload.coords_available = true;
 			payload.coords_x = localClient.getPoint().getX();
 			payload.coords_y = localClient.getPoint().getY();
 		}
@@ -209,5 +210,15 @@ public class MazewarClient {
 	
 	public synchronized void noTick() {
 		lastTick = lastTick + 200;
+	}
+
+	public void addScoreTable(ScoreTableModel scoreModel) {
+		scoreTable = scoreModel;	
+	}
+	
+	private int getCurrentScore() {
+		int i = -1;
+		while(!(scoreTable.getValueAt(++i,2).equals("GUI")));
+		return (int)scoreTable.getValueAt(i,1);
 	}
 }

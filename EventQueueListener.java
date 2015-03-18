@@ -27,12 +27,7 @@ public class EventQueueListener implements Runnable {
 	private void renderEvent(MazewarPacket packet) {
 		//System.out.println("DEQUEUED EVENT: " + packet.eventType + " FROM: " + packet.clientName);
 		if(packet.eventType == MazewarPacket.REGISTER) {
-			if(!packet.coords_available)
-				registerClient(packet.clientName, packet.clientId);
-			else {
-				Point coords = new Point(packet.coords_x, packet.coords_y);
-				registerClient(coords, packet.orientation, packet.clientName, packet.clientId);
-			}
+			registerClient(packet);
 			return;
 		}
 		
@@ -97,23 +92,19 @@ public class EventQueueListener implements Runnable {
 		
 	}
 	
-	private void registerClient(String clientName, int clientId) {
-		System.out.println("NOT HEREEE!!!!!!");
-		if(remoteClients.containsKey(clientId)) return;
-		RemoteClient client = new RemoteClient(clientName);
-		maze.addClient(client, clientId);
-		remoteClients.put(clientId, client);
-	}
-	
-	private void registerClient(Point coords, String orientation, String clientName, int clientId) {
+	private void registerClient(MazewarPacket packet) {
 		System.out.println("HEREEE!!!!!!");
 		System.out.println(remoteClients);
-		if(remoteClients.containsKey(clientId)) return;
-		System.out.println(coords);
-		RemoteClient client = new RemoteClient(clientName);
-		Direction d = getOrientation(orientation);
+		
+		if(remoteClients.containsKey(packet.clientId)) return;
+		
+		RemoteClient client = new RemoteClient(packet.clientName);
+		Direction d = getOrientation(packet.orientation);
+		Point coords = new Point(packet.coords_x, packet.coords_y);
+		
 		maze.addClient(client, coords, d);
-		remoteClients.put(clientId, client);
+		MazewarClient.scoreTable.setScore(client, packet.score);
+		remoteClients.put(packet.clientId, client);
 	}
 
 	private Direction getOrientation(String orientation) {
