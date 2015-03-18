@@ -219,6 +219,6 @@ public class MazewarClient {
 	private int getCurrentScore() {
 		int i = -1;
 		while(!(scoreTable.getValueAt(++i,2).equals("GUI")));
-		return (int)scoreTable.getValueAt(i,1);
+		return (Integer)scoreTable.getValueAt(i,1);
 	}
 }

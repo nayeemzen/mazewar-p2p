@@ -254,10 +254,8 @@ public class ScoreTableModel implements TableModel, MazeListener {
 			  System.out.println("RECEIVED score:: " + score);
               Object o = clientMap.get(client);
               assert(o instanceof ScoreWrapper);
-              scoreSet.remove(o);
               ScoreWrapper s = (ScoreWrapper)o;
               s.setScore(score);
-              scoreSet.add(s);
               notifyListeners();
 		}
 }
