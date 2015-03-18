@@ -28,7 +28,6 @@ public class MazewarClient {
 	public static ConcurrentHashMap <String, Integer> ackMap;
 	public static Set<String> waitlist;
 	public static AtomicInteger lamportClock;
-	public static boolean playing = false;
 	
 	
 	public boolean isCoordinator;
@@ -53,7 +52,7 @@ public class MazewarClient {
 			}
 		});
 		
-		isCoordinator = clientId == 1 ? true : false;	
+		isCoordinator = (clientId == 1);
 		inElectionSince = 0;
 	}
 	
@@ -66,10 +65,7 @@ public class MazewarClient {
 	}
 
 	public boolean sendEvent(ClientEvent clientevent) {
-		if (!MazewarClient.playing == true && !clientevent.equals(ClientEvent.register)) {
-			return false;
-		}
-		
+		//System.out.println(clientevent.equals(ClientEvent.missileTick));
 		MazewarPacket payload = new MazewarPacket();
 		
 		if (clientevent.equals(ClientEvent.moveForward)) {
@@ -92,13 +88,20 @@ public class MazewarClient {
 			return false;
 		}
 		
-		requestBroadcast(payload);
 		if(!clientevent.equals(ClientEvent.register))
 			eventQueue.add(payload);
+		else {
+			payload.orientation = localClient.getOrientation().toString();
+			payload.coords_available = true;
+			payload.coords_x = localClient.getPoint().getX();
+			payload.coords_y = localClient.getPoint().getY();
+		}
+		
+		broadcastRequest(payload);
 		return true;
 	}
 	
-	public void requestBroadcast(MazewarPacket payload) {
+	public void broadcastRequest(MazewarPacket payload) {
 		payload.clientId = clientId;
 		payload.clientName = clientName;
 		payload.packetType = MazewarPacket.REQUEST;
@@ -111,7 +114,7 @@ public class MazewarClient {
 		}
 	}
 	
-	public void releaseBroadcast(MazewarPacket payload) {
+	public void broadcastRelease(MazewarPacket payload) {
 		MazewarPacket packet = new MazewarPacket(payload);
 		packet.packetType = MazewarPacket.RELEASE;
 		broadcast(packet);
@@ -179,21 +182,13 @@ public class MazewarClient {
 				socket = new Socket(hostname, port);
 				ObjectInputStream readStream = new ObjectInputStream(socket.getInputStream());
 				ObjectOutputStream writeStream = new ObjectOutputStream(socket.getOutputStream());
-				
 				this.peerList.put(peer, writeStream);
-				RemoteClient client = new RemoteClient(clientName);
-				EventQueueListener.remoteClients.put(clientId, client);
-				maze.addClient(client, clientId);
-				
 				(new Thread (new IncomingMessageListenerThread(this, readStream, writeStream))).start();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	
 		}
 		
-		if (peerList.size() == 3) {
-			MazewarClient.playing = true;
-		}
 	}
 	
 	public void start(ArrayList <String> peerList, int port) {

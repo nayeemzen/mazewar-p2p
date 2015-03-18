@@ -33,11 +33,7 @@ public class MazewarServer implements Runnable {
 				ObjectInputStream readStream = new ObjectInputStream(clientSocket.getInputStream());
 				
 				peerList.put(clientSocket.getInetAddress().toString() + "-" + clientSocket.getPort(), writeStream);
-				
-				if (peerList.size() == 3) {
-					MazewarClient.playing = true;
-				}
-				
+				client.sendEvent(ClientEvent.register);
 				(new Thread (new IncomingMessageListenerThread(client, readStream, writeStream))).start();
 			} catch (IOException e) {
 				System.err.println("Error: error accepting client connection");

@@ -33,7 +33,7 @@ public class MazewarPacket implements Serializable {
 	public static final int ERROR		= 302;
 	public static final int QUIT	 	= 303;
 	
-	/* Packet Types (for Distributed Mutex) */
+	/* Packet Types (for Distributed Mutex and Multicast) */
 	public static final int REQUEST = 400;
 	public static final int ACK = 401;
 	public static final int RELEASE = 402;
@@ -52,10 +52,13 @@ public class MazewarPacket implements Serializable {
 	public int errorCode;
 	public int packetType;
 	public String packetId;
-	public String clientName;
 	
 	/* Client information variables */
+	public String clientName;
+	public boolean coords_available;
 	public int clientId;
 	public int score;
-	
+	public int coords_x;
+	public int coords_y;
+	public String orientation;
 }

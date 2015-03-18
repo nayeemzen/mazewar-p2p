@@ -37,7 +37,6 @@ public class IncomingMessageListenerThread implements Runnable {
 				client.clientIdToWriteStream.put(packetFromClient.clientId, this.writeStream);
 			} else if (packetFromClient.eventType == MazewarPacket.QUIT) {
 				System.out.println("PLAYER QUITTING, STOP PLAYING.");
-				MazewarClient.playing = false;
 			} else if (packetFromClient.eventType == MazewarPacket.ACTION_MISSILE_TICK) {
 				client.tick();
 			}
@@ -73,7 +72,7 @@ public class IncomingMessageListenerThread implements Runnable {
 				
 				if(MazewarClient.ackMap.get(packetFromClient.packetId) == 0) {
 					//System.out.println("RECEIVED ALL ACKS!!!");
-					client.releaseBroadcast(packetFromClient);
+					client.broadcastRelease(packetFromClient);
 					MazewarClient.ackMap.remove(packetFromClient.packetId);
 					if (packetFromClient.eventType == MazewarPacket.QUIT) {
 						Mazewar.quit();
@@ -103,8 +102,6 @@ public class IncomingMessageListenerThread implements Runnable {
 				}
 				
 				client.clientIdToWriteStream.remove(packetFromClient.clientId);
-				
-				MazewarClient.playing = true;
 			}
 		} else if (packetFromClient.packetType == packetFromClient.TICK_ELECTION) {
 			System.out.println("TICK ELECTION STARTED.");

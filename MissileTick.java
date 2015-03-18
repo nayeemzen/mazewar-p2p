@@ -21,7 +21,7 @@ public class MissileTick implements Runnable {
 			
 			if (client.isCoordinator) {
 				client.sendEvent(ClientEvent.missileTick);
-			} else if (MazewarClient.playing) {
+			} else {
 				client.noTick();
 				if (client.lastTick >= 800) {
 					client.broadcastElection();

@@ -17,6 +17,7 @@ public class EventQueueListener implements Runnable {
 		while(true) {
 			MazewarPacket head = MazewarClient.eventQueue.peek();
 			if(head == null) continue;
+			if(head.packetId == null) continue;
 			if (!MazewarClient.ackMap.containsKey(head.packetId) && !MazewarClient.waitlist.contains(head.packetId)) {
 				renderEvent(MazewarClient.eventQueue.remove());
 			}
@@ -26,7 +27,12 @@ public class EventQueueListener implements Runnable {
 	private void renderEvent(MazewarPacket packet) {
 		//System.out.println("DEQUEUED EVENT: " + packet.eventType + " FROM: " + packet.clientName);
 		if(packet.eventType == MazewarPacket.REGISTER) {
-			registerClient(packet.clientName, packet.clientId);
+			if(!packet.coords_available)
+				registerClient(packet.clientName, packet.clientId);
+			else {
+				Point coords = new Point(packet.coords_x, packet.coords_y);
+				registerClient(coords, packet.orientation, packet.clientName, packet.clientId);
+			}
 			return;
 		}
 		
@@ -92,9 +98,35 @@ public class EventQueueListener implements Runnable {
 	}
 	
 	private void registerClient(String clientName, int clientId) {
+		System.out.println("NOT HEREEE!!!!!!");
+		if(remoteClients.containsKey(clientId)) return;
 		RemoteClient client = new RemoteClient(clientName);
 		maze.addClient(client, clientId);
 		remoteClients.put(clientId, client);
+	}
+	
+	private void registerClient(Point coords, String orientation, String clientName, int clientId) {
+		System.out.println("HEREEE!!!!!!");
+		System.out.println(remoteClients);
+		if(remoteClients.containsKey(clientId)) return;
+		System.out.println(coords);
+		RemoteClient client = new RemoteClient(clientName);
+		Direction d = getOrientation(orientation);
+		maze.addClient(client, coords, d);
+		remoteClients.put(clientId, client);
+	}
+
+	private Direction getOrientation(String orientation) {
+		if(orientation.equals("East"))
+			return Direction.East;
+		if(orientation.equals("West"))
+			return Direction.West;
+		if(orientation.equals("North"))
+			return Direction.North;
+		if(orientation.equals("South"))
+			return Direction.South;
+		
+		return null;
 	}
 
 }
