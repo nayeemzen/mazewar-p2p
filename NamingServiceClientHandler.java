@@ -46,7 +46,7 @@ public class NamingServiceClientHandler implements Runnable {
 			e.printStackTrace();
 		}
 		
-		String clientInfo = clientSocket.getRemoteSocketAddress().toString() + "-" + parameters.port + "-" + parameters.clientName + "-" + clientId;
+		String clientInfo = clientSocket.getInetAddress().toString() + "-" + parameters.port + "-" + parameters.clientName + "-" + clientId;
 		this.clientName = parameters.clientName;
 		this.clientInfo = clientInfo;
 		connectedClients.add(clientInfo);
