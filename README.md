@@ -1,4 +1,4 @@
-# Mazewar Multiplayer using peer-to-peer communications
+# Multiplayer Mazewar using fully decentralized P2P
 
 ### To compile:
 
